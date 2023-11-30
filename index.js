@@ -5,16 +5,16 @@ const state = {
   events: [],
 };
 
-const eventList = document.querySelector("#artists");
+const eventList = document.querySelector("#events");
 const addEventForm = document.querySelector("#addEvent");
-//addArtistForm.addEventListener("submit", addArtist);
+addEventForm.addEventListener("submit", addEvent);
 
 /**
  * Sync state with the API and rerender
  */
 async function render() {
-  getEvents();
-  renderEvents();
+  await getEvents();
+  await renderEvents();
 }
 render();
 
@@ -26,6 +26,7 @@ async function getEvents() {
     const response = await fetch(API_URL);
     const json = await response.json();
     state.events = json.data;
+    // console.log(state.events);
   } catch (err) {
     console.log(err);
   }
@@ -36,18 +37,47 @@ async function getEvents() {
  */
 function renderEvents() {
   if (!state.events.length) {
-    eventList.innerHTML = "<li>No artists</li>";
+    eventList.innerHTML = "<li>No events</li>";
     return;
   }
 
-  const eventsCards = state.events.map((events) => {
+  const eventsCards = state.events.map((event) => {
     const li = document.createElement("li");
     li.innerHTML = `
-    <h2> ${events.name}</h2>
-    <p>${events.location}</p>
-    <p>${events.date}</p>
-    <p>${events.description}</p>`;
+    <h2> ${event.name}</h2>
+    <p>${event.location}</p>
+    <date>${event.date}</date>
+    <p>${event.description}</p>
+    <button>Delete</button>`;
+
     return li;
   });
   eventList.replaceChildren(...eventsCards);
+}
+
+// Ask the API to create a new artist based on form data
+
+async function addEvent(event) {
+  event.preventDefault();
+
+  // TODO
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        name: addEventForm.name.value,
+        description: addEventForm.description.value,
+        date: addEventForm.date.value,
+        location: addEventForm.location.value,
+      }),
+      headers: { "Content-Type": "application/json charset=UTF-8" },
+    });
+    if (!response.ok) {
+      throw new Error("Fail to create ");
+    }
+    render();
+  } catch (error) {
+    console.error(error);
+  }
 }
